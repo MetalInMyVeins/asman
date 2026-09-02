@@ -29,10 +29,18 @@ main:
 
 	; SysV calling convention.
 	lea	rdi, [rel txt]
+	; printf is a variadic function.
+	; floating point arguments pass in specialized registers. but printf has no way to tell beforehand
+	; how many floating point arguments are passed. to denote this number, al is used.
+	; setting eax to 0 zero-extends and sets the entire rax to 0 which means no floating point
+	; arguments are being passed.
 	xor	eax, eax
 	call	printf
 
 	; setting all 32 bits of eax to zero which zero extends and makes the entire rax 0.
+	; this is basically setting return code to 0 by setting eax to by convention.
+	; but note that in this specific case, this is unneeded because we had already
+	; set eax to 0 before calling printf.
 	xor	eax, eax
 	; it does two things.
 	; first it moves the value of rbp to rsp.
