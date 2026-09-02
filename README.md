@@ -5,25 +5,25 @@ The purpose of this repository is to solve various fundamental programming probl
 - Hosted: Links to libc
 - Freestanding: Syscall-based
 
-### Targets
+# Targets
 
 - x86_64 (linux)
 
-### Dependencies
+# Dependencies
 
-#### Must to have:
+## Must to have:
 
 - `nasm`: for assembling
 - `gcc`: for linking hosted programs
 - `gnu ld`: for linking freestanding programs
 
-#### Optional:
+## Optional:
 
 - `clang`: optional compiler
 - `ld.lld`: optional linker
 - `objdump`: for using `scripts/odmp` to dump binary
 
-### Problems list
+# Problems list
 
 1. Just a hello world.
 2. Take two integers as input and compare their sum to a predefined third integer, print the comparison.
