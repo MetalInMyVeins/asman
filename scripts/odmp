@@ -1,0 +1,3 @@
+#!/bin/bash
+
+objdump -dS -j .text -j .data -j .rodata --disassembler-color=on -M intel -l $@
