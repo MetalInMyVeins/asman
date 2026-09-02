@@ -1,0 +1,10 @@
+Diagnostics:
+    Suppress:
+        - unused-includes
+
+Completion:
+    HeaderInsertion: IWYU
+
+CompileFlags:
+    Add:
+        - -Wno-empty-translation-unit
