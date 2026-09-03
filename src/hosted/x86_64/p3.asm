@@ -1,5 +1,5 @@
 section .rodata
-	fdd db "%d", 0
+	fstrn db "%s", 10, 0
 
 section .data
 
@@ -18,16 +18,19 @@ main:
 
 	push	rbx
 	push	r12
+	push	r13
+	sub	rsp, 8
 
-	mov	ebx, 0
+	mov	ebx, 1
 	mov	r12d, [rbp - 8]
+	mov	r13, [rbp - 16]
 
 .loop:
 	cmp	ebx, r12d
 	jge	.done
 
-	lea	rdi, [rel fdd]
-	mov	esi, ebx
+	lea	rdi, [rel fstrn]
+	mov	rsi, [r13 + 8 * rbx]
 	xor	eax, eax
 	call	printf
 
@@ -35,6 +38,7 @@ main:
 	jmp	.loop
 
 .done:
+	pop	r13
 	pop	r12
 	pop	rbx
 	xor	eax, eax
