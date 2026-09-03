@@ -29,4 +29,5 @@ The purpose of this repository is to solve various fundamental programming probl
 |:---:|:---:|:---:|:---:|
 | 1 | Just a hello world | X | X |
 | 2 | Take two integers as input and compare their sum to a predefined third integer, print the comparison | X | _ |
-| 3 | Take two integers as command line argument and compare their sum to a predefined third integer, print the comparison | _ | _ |
+| 3 | Take arbitrary number of command line arguments and print them in order | X | _ |
+| 4 | Take two integers as command line argument and compare their sum to a predefined third integer, print the comparison | _ | _ |
