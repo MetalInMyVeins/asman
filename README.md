@@ -31,3 +31,4 @@ The purpose of this repository is to solve various fundamental programming probl
 | 2 | Take two integers as input and compare their sum to a predefined third integer, print the comparison | X | _ |
 | 3 | Take arbitrary number of command line arguments and print them in order | X | _ |
 | 4 | Take four integers as command line arguments and compare sum of each pair with each other, print the comparison | X | _ |
+| 5 | Take one string from stdin, one from command line argument, concatenate them, store the result, and print the stored result | _ | _ |
