@@ -167,27 +167,33 @@ main:
 	xor	eax, eax
 	call	printf
 
-	jmp	.unalloc_stack_regs
+	jmp	.unalloc_all_stack_regs
 
 .strlen_zero:
 	lea	rdi, [rel prompt_strlen_zero]
 	xor	eax, eax
 	call	printf
-	jmp	.unalloc_stack_regs
+	pop	r12
+	pop	rbx
+	jmp	.done
 
 .fgets_failed:
 	lea	rdi, [rel prompt_fgetsfailed]
 	xor	eax, eax
 	call	printf
-	jmp	.unalloc_stack_regs
+	pop	r12
+	pop	rbx
+	jmp	.done
 
 .malloc_failed:
 	lea	rdi, [rel prompt_mallocfailed]
 	xor	eax, eax
 	call	printf
-	jmp	.unalloc_stack_regs
+	pop	r12
+	pop	rbx
+	jmp	.done
 
-.unalloc_stack_regs:
+.unalloc_all_stack_regs:
 	pop	r14
 	pop	r13
 	pop	r12
