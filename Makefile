@@ -8,7 +8,8 @@ AS := nasm
 
 ASFLAGS := \
 	-f \
-	elf64
+	elf64 \
+	-I include/
 
 NOPIE_LINK := \
 	-no-pie
