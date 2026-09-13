@@ -1,25 +1,59 @@
 ; MACRO_PRINTERS_1
-; %1 = format spec
-; %2 = init value
-; %3 = comparison instruction
-; %4 = compare with x
-; %5 = array (register)
-%macro looper_printer_bottomup_db2dd 5
-	push	rbx
-	sub	rsp, 8
-	mov	rbx, %2
-.looper_printer_bottomup_db2dd:
-	cmp	rbx, %4
-	%3	.looper_printer_bottomup_db2dd_end
+%macro printer_dd 1
+section .rodata
+	_fmt_dd db "%d", 10, 0
 
-	lea	rdi, [rel %1]
-	movzx	esi, byte [%5 + rbx]
+section .text
+	lea	rdi, [rel _fmt_dd]
+	mov	esi, %1
 	xor	eax, eax
 	call	printf
+%endmacro
 
-	inc	rbx
-	jmp	.looper_printer_bottomup_db2dd
-.looper_printer_bottomup_db2dd_end:
-	add	rsp, 8
-	pop	rbx
+; MACRO_PRINTERS_2
+%macro printer_ld 1
+section .rodata
+	_fmt_ld db "%ld", 10, 0
+
+section .text
+	lea	rdi, [rel _fmt_ld]
+	mov	rsi, %1
+	xor	eax, eax
+	call	printf
+%endmacro
+
+; MACRO_PRINTERS_3
+%macro printer_c 1
+section .rodata
+	_fmt_c db "%c", 10, 0
+
+section .text
+	lea	rdi, [rel _fmt_c]
+	mov	sil, %1
+	xor	eax, eax
+	call	printf
+%endmacro
+
+; MACRO_PRINTERS_4
+%macro printer_str 1
+section .rodata
+	_fmt_str db "%s", 0
+
+section .text
+	lea	rdi, [rel _fmt_str]
+	mov	rsi, %1
+	xor	eax, eax
+	call	printf
+%endmacro
+
+; MACRO_PRINTERS_5
+%macro printer_strn 1
+section .rodata
+	_fmt_strn db "%s", 10, 0
+
+section .text
+	lea	rdi, [rel _fmt_strn]
+	mov	rsi, %1
+	xor	eax, eax
+	call	printf
 %endmacro
