@@ -9,6 +9,8 @@ AS := nasm
 ASFLAGS := \
 	-f \
 	elf64 \
+	-g \
+	-F dwarf \
 	-I include/
 
 NOPIE_LINK := \
