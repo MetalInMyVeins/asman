@@ -33,4 +33,4 @@ The purpose of this repository is to solve various fundamental programming probl
 | 4 | Take four integers as command line arguments and compare sum of each pair with each other, print the comparison | X | _ | _ | _ |
 | 5 | Take n = array length from stdin, read n integers from stdin, and print twice of each element after input completion | X | _ | _ | _ |
 | 6 | Take a string (length limit = 256) from stdin, reverse it, and print the result | X | _ | _ | _ |
-| 7 | Take one string (length limit = 256) from stdin, one from command line argument, concatenate them, store the result, and print the stored result | X | _ | _ | _ |
+| 7 | Take one string (length limit = 16) from stdin, one from command line argument, concatenate them, store the result, and print the stored result | X | _ | _ | _ |
