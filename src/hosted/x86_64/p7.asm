@@ -1,194 +1,145 @@
-; the problem is to take one string from stdin, and another from
-; argv, concatenate them, store them, and print them.
+; the target is to concatenate two strings and store it then
+; print it. one string has to be accepted from stdin, and
+; another from command line arguments.
+%include "hosted/fmt.inc"
+%include "hosted/printer.inc"
 
-; formats
 section .rodata
-	fmt_d db "%d", 0
-	fmt_ld db "%ld", 0
-	fmt_c db "%c", 0
-	fmt_str db "%s", 0
-	fmt_strn db "%s", 10, 0
-
-; prompts
-section .rodata
-	prompt_fgetsfailed db "fgets failed", 10, 0
-	prompt_strlen_zero db "String length = 0", 10, "Abort", 10, 0
-	prompt_mallocfailed db "malloc failed", 10, 0
+	abort1 db "No arguments provided. ABORT.", 10, 0
+	abort2 db "fgets failed. ABORT.", 10, 0
+	abort3 db "malloc failed. ABORT.", 10, 0
 
 section .data
 
 section .text
 	global main
-	extern printf
-	extern fgets, strlen
-	extern stdin
+	extern fgets
 	extern malloc, free
+	extern printf
+	extern stdin
+	extern strlen
 
 main:
 	push	rbp
 	mov	rbp, rsp
 	sub	rsp, 16
 
+	; as the command line string, we'd take the first
+	; argument provided after executable path. so it's
+	; basically just argv[1], and we can hardcode it.
+	mov	eax, edi
+	cmp	eax, 2
+	jl	.done_abort1
+
+	mov	rax, rsi
+	add	rax, 8
+	mov	[rbp - 8], rax
+	; [rbp - 8]: 8B: stores pointer to command line
+	; argument.
+	
 	push	rbx
-	push	r12			; RSP => 16 + 16 = 32
-
-	; we'd store one string in [rbp - 8] and another in [rbp - 16].
-	; first we'd take from argv. we consider only the first
-	; argument as the provided string so the index for accession
-	; can be hardcoded.
-	mov	[rbp - 8], rsi
-	mov	rax, [rbp - 8]
-	mov	rbx, [rax + 8]
-	mov	[rbp - 16], rbx
-
-	; the program shouldn't continue if input string length is zero.
-	; so do a check.
-	cmp	[rbp - 16], 0
-	je	.strlen_zero
-
-	; at this point, [rbp - 16] contains the string from argv.
-	; now we'd take a string from stdin and store in [rbp - 8].
-	; we'd use fgets.
-	; $1 = const char *buf
-	; $2 = int size
-	; $3 = FILE *stream
-	; create the 256 bytes buffer first.
-	sub	rsp, 256		; RSP => 32 + 256 = 288
-	; VALID LOCAL STACK RANGE: 32 - 288
-	; USAGE: buffer allocation
-	lea	rdi, [rbp - 256]
-	mov	esi, 256
+	push	r12		; RSP => 16 + 16 = 32
+	sub	rsp, 16		; RSP => 32 + 16 = 48
+	; buffer range: 32 - 48: 16B
+	
+	lea	rdi, [rbp - 48]
+	mov	esi, 16
 	mov	rdx, [rel stdin]
 	call	fgets
-	; store the pointer in [rbp - 8].
-	mov	[rbp - 8], rax
+	mov	[rbp - 16], rax
+	; [rbp - 16]: 8B: stores pointer to string returned
+	; by fgets.
+ 
+	; abort if fgets returned nullptr.
+	cmp	[rbp - 16], 0
+	je	.done_abort2
+	
+	sub	rsp, 32		; RSP => 48 + 32 = 80
+	; range: 48 - 80: 32B
 
-	; abort if fgets failed.
-	cmp	[rbp - 8], 0
-	je	.fgets_failed
-
-	; we have to handle another case. the argv string is devoid of
-	; any newline character. if in range, fgets string contains
-	; newline by design. we have to get rid of that too. in stdin,
-	; if user presses only enter, newline is considered the input
-	; string. we have to handle that case as well.
-	; call strlen and determine length.
+	; calculate length of each strings. both are NUL terminated.
 	mov	rdi, [rbp - 8]
+	mov	rdi, [rdi]
 	call	strlen
+	mov	rbx, rax
+	mov	[rbp - 56], rax
+	; [rbp - 56] = length of [rbp - 8]
 
-	; rax being 1 means it's only the newline. abort if so.
-	; otherwise just decrement 1 to keep track of the newline-less
-	; index range.
-	cmp	rax, 1
-	je	.strlen_zero
-	dec	rax
-
-	; FREE REGISTERS => RBX, R12
-	; RSP => 288
-	sub	rsp, 32			; RSP => 288 + 32 = 320
-	; VALID LOCAL STACK RANGE: 288 - 320
-
-	; now we have two valid strings in:
-	; [rbp - 8]
-	; [rbp - 16]
-	; the new concatenated string would be placed at [rbp - 320].
-	; at this point, rax contains the length of string in [rbp - 8].
-	; calculate strlen of [rbp - 16] and store each one on stack.
-	; store stdin string length in [rbp - 296].
-	; store argv string length in [rbp - 304].
-	mov	[rbp - 296], rax
 	mov	rdi, [rbp - 16]
 	call	strlen
-	mov	[rbp - 304], rax
-	; store the combined length on [rbp - 312].
-	mov	rax, [rbp - 296]
-	add	rax, [rbp - 304]
-	mov	[rbp - 312], rax
+	add	rbx, rax
+	mov	[rbp - 64], rax
+	; [rbp - 64] = length of [rbp - 16]
+	mov	[rbp - 72], rbx
+	; [rbp - 72] = lenght of [rbp - 8] + [rbp - 16]
 
-	; combined string length is now stored in [rbp - 312].
-	; we have to malloc the required amount of bytes to store the
-	; concatenated string. malloc one extra byte for storing NUL
-	; byte.
-	mov	rdi, [rbp - 312]
+	mov	rdi, [rbp - 72]
 	inc	rdi
 	call	malloc
-	mov	[rbp - 320], rax
-
-	; check if malloc failed
-	cmp	[rbp - 320], 0
-	je	.malloc_failed
+	mov	[rbp - 80], rax
+	; [rbp - 80] = malloc'd address
+	cmp	[rbp - 80], 0
+	je	.done_abort3
 	
-	; STATE REPORT:
-	; [rbp - 320] => malloc'd pointer
-	; [rbp - 312] => combined length of string
-	; [rbp - 296] => stdin string length
-	; [rbp - 304] => argv string length
-	; [rbp - 8] => stdin string
-	; [rbp - 16] => argv string
-	; RBX => master index
-	; get it to 0 and loop over the two strings.
-	mov	rbx, 0
-	mov	rax, [rbp - 8]
 	push	r13
-	push	r14			; RSP => 320 + 16 = 336
+	push	r14		; RSP => 80 + 16 = 96
+	xor	rbx, rbx
+	xor	r12, r12
+	xor	r13, r13
+	xor	r14, r14
 
-	; FREE REGISTERS => R12, R13, R14
+	; FREE REGS: rbx, r12, r13, r14
+	mov	rax, [rbp - 80]
 	mov	r12, [rbp - 8]
-	mov	r13, [rbp - 320]
-.string1:
-	cmp	rbx, [rbp - 296]
-	je	.string1_end
+	mov	r12, [r12]
+.loop1:
+	cmp	rbx, [rbp - 56]
+	je	.loop1_end
 
-	mov	al, [r12 + rbx]
-	mov	[r13 + rbx], al
+	mov	r13b, [r12 + rbx]
+	mov	[rax + rbx], r13b
 	inc	rbx
-	jmp	.string1
+	jmp	.loop1
 
-.string1_end:
-	mov	r14, rbx
-	mov	rbx, 0
+.loop1_end:
+	mov	rax, [rbp - 80]
 	mov	r12, [rbp - 16]
+	xor	r13, r13
 
-.string2:
-	cmp	rbx, [rbp - 304]
-	je	.string2_end
-	
-	mov	al, [r12 + rbx]
-	mov	[r13 + r14], al
+.loop2:
+	cmp	r13, [rbp - 64]
+	je	.loop2_end
+
+	mov	r14b, [r12 + r13]
+	mov	[rax + rbx], r14b
 	inc	rbx
-	inc	r14
-	jmp	.string2
+	inc	r13
+	jmp	.loop2
 
-.string2_end:
-	mov	[r13 + r14], 0
+.loop2_end:
+	mov	[rax + rbx], 0
+	printer fmt_s, [rbp - 80]
 
-	lea	rdi, [rel fmt_strn]
-	mov	rsi, r13
-	xor	eax, eax
-	call	printf
+	mov	rdi, [rbp - 80]
+	call	free
 
 	jmp	.unalloc_all_stack_regs
 
-.strlen_zero:
-	lea	rdi, [rel prompt_strlen_zero]
-	xor	eax, eax
-	call	printf
+.done_abort1:
+	lea	rax, [rel abort1]
+	printer fmt_s_nl, rax
+	jmp	.done
+
+.done_abort2:
+	lea	rax, [rel abort2]
+	printer fmt_s_nl, rax
 	pop	r12
 	pop	rbx
 	jmp	.done
 
-.fgets_failed:
-	lea	rdi, [rel prompt_fgetsfailed]
-	xor	eax, eax
-	call	printf
-	pop	r12
-	pop	rbx
-	jmp	.done
-
-.malloc_failed:
-	lea	rdi, [rel prompt_mallocfailed]
-	xor	eax, eax
-	call	printf
+.done_abort3:
+	lea	rax, [rel abort3]
+	printer fmt_s_nl, rax
 	pop	r12
 	pop	rbx
 	jmp	.done
